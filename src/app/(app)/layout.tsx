@@ -4,7 +4,7 @@ import { useAuth } from '@/context/AuthContext'
 import { useRouter, usePathname } from 'next/navigation'
 import { useEffect } from 'react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { BookOpen, BarChart2, History, Heart } from 'lucide-react'
+import { BookOpen, BarChart2, History } from 'lucide-react'
 import { AuthProvider } from '@/context/AuthContext'
 
 export default function AppLayout({
@@ -73,16 +73,6 @@ export default function AppLayout({
                 <div className="flex flex-col items-center">
                   <BarChart2 className="h-5 w-5" />
                   <span className="text-xs mt-1">Stats</span>
-                </div>
-              </TabsTrigger>
-              <TabsTrigger
-                value="/support-us"
-                className="flex-1 data-[state=active]:bg-[#6C63FF] data-[state=active]:text-white"
-                onClick={() => router.push('/support-us')}
-              >
-                <div className="flex flex-col items-center">
-                  <Heart className="h-5 w-5" />
-                  <span className="text-xs mt-1">Support</span>
                 </div>
               </TabsTrigger>
             </TabsList>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, MenuIcon, Coffee } from "lucide-react";
@@ -32,8 +32,26 @@ export default function JournalInterface({
   isLoading = false,
 }: JournalInterfaceProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showBanner, setShowBanner] = useState(false);
   const { user, signOut } = useAuth();
   const router = useRouter();
+
+  // Determine if banner should be shown randomly when component mounts
+  useEffect(() => {
+    // Show banner with 30% probability
+    const shouldShowBanner = Math.random() < 0.3;
+    setShowBanner(shouldShowBanner);
+
+    // If banner is shown, set a timer to hide it after 10 seconds
+    if (shouldShowBanner) {
+      const timer = setTimeout(() => {
+        setShowBanner(false);
+      }, 10000); // 10 seconds
+
+      // Clean up timer on component unmount
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const formatDate = (date: Date) => {
     return date.toLocaleString("en-US", {
@@ -111,35 +129,49 @@ export default function JournalInterface({
           </Sheet>
         </div>
 
-        {/* Donation Banner - Comment this section to hide it
-        <div className="px-4 mb-4">
-          <div
-            className="bg-gradient-to-r from-[#2A2A2A] to-[#1A1A1A] rounded-lg p-3 border border-gray-800 flex items-center justify-between cursor-pointer hover:bg-[#2A2A2A] transition-colors"
-            onClick={() => router.push('/support-us')}
-          >
-            <div className="flex items-center">
-              <div className="bg-[#FF9D66]/20 p-2 rounded-full mr-3">
-                <Coffee className="h-5 w-5 text-[#FF9D66]" />
+        {/* Donation Banner - Shows randomly and disappears after a delay */}
+        {showBanner && (
+          <div className="px-4 mb-4 animate-fade-in">
+            <div
+              className="bg-gradient-to-r from-[#2A2A2A] to-[#1A1A1A] rounded-lg p-3 border border-gray-800 flex items-center justify-between cursor-pointer hover:bg-[#2A2A2A] transition-colors"
+              onClick={() => router.push('/support-us')}
+            >
+              <div className="flex items-center">
+                <div className="bg-[#FF9D66]/20 p-2 rounded-full mr-3">
+                  <Coffee className="h-5 w-5 text-[#FF9D66]" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-white">Enjoying Faith Journal?</p>
+                  <p className="text-xs text-gray-400">Support the developer with a coffee</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium text-white">Enjoying Faith Journal?</p>
-                <p className="text-xs text-gray-400">Support the developer with a coffee</p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-400 hover:text-gray-300"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowBanner(false);
+                  }}
+                >
+                  Dismiss
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-[#FF9D66]/30 bg-[#FF9D66] text-black font-medium hover:bg-[#FF9D66]/90"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push('/support-us');
+                  }}
+                >
+                  Support
+                </Button>
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-[#FF9D66]/30 bg-[#FF9D66] text-black font-medium hover:bg-[#FF9D66]/90"
-              onClick={(e) => {
-                e.stopPropagation();
-                router.push('/support-us');
-              }}
-            >
-              Support
-            </Button>
           </div>
-        </div>
-        */}
+        )}
 
         {/* Journal entries */}
         <div className="space-y-6 mb-24">
