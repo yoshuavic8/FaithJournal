@@ -92,18 +92,22 @@ export default function HistoryPage() {
         if (versesError) throw versesError
 
         if (versesData) {
-          console.log('Verses data:', versesData);
           // Transform the data to match the FavoriteVerse interface
-          const formattedVerses = versesData.map(item => ({
-            id: item.id,
-            verse_id: item.verse_id,
-            created_at: item.created_at,
-            verse: {
-              id: item.verse.id,
-              reference: item.verse.reference,
-              text: item.verse.text
-            }
-          }))
+          const formattedVerses = versesData.map(item => {
+            // Check if verse is an array and get the first item if it is
+            const verseData = Array.isArray(item.verse) ? item.verse[0] : item.verse;
+
+            return {
+              id: item.id,
+              verse_id: item.verse_id,
+              created_at: item.created_at,
+              verse: {
+                id: verseData?.id || '',
+                reference: verseData?.reference || '',
+                text: verseData?.text || ''
+              }
+            };
+          })
           setFavoriteVerses(formattedVerses)
         }
       } catch (error) {
