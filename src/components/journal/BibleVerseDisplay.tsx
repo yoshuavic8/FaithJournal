@@ -1,0 +1,161 @@
+'use client'
+
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardFooter } from '@/components/ui/card'
+import { BookOpen, Heart, Share2, ArrowLeft } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { createSupabaseBrowserClient } from '@/lib/supabase'
+import { useAuth } from '@/context/AuthContext'
+import { v4 as uuidv4 } from 'uuid'
+
+interface BibleVerse {
+  id: string
+  reference: string
+  text: string
+  explanation?: string
+  isFromAI?: boolean
+}
+
+interface BibleVerseDisplayProps {
+  verse: BibleVerse
+  onSaveFavorite?: () => void
+  isSaving?: boolean
+  onContinue?: () => void
+}
+
+export default function BibleVerseDisplay({
+  verse,
+  onSaveFavorite,
+  isSaving = false,
+  onContinue
+}: BibleVerseDisplayProps) {
+  const [isFavorited, setIsFavorited] = useState(false)
+  const [isSharing, setIsSharing] = useState(false)
+  const router = useRouter()
+  const { user } = useAuth()
+  const supabase = createSupabaseBrowserClient()
+
+  const handleSaveFavorite = async () => {
+    if (!user) return
+
+    try {
+      if (onSaveFavorite) {
+        onSaveFavorite()
+      } else {
+        const { error } = await supabase.from('favorite_verses').insert({
+          id: uuidv4(),
+          user_id: user.id,
+          verse_id: verse.id,
+          created_at: new Date().toISOString(),
+        })
+
+        if (error) throw error
+      }
+
+      setIsFavorited(true)
+    } catch (error) {
+      console.error('Error saving favorite verse:', error)
+    }
+  }
+
+  const handleShare = async () => {
+    setIsSharing(true)
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Bible Verse from Faith Journal',
+          text: `"${verse.text}" - ${verse.reference}`,
+          url: window.location.href,
+        })
+      } else {
+        await navigator.clipboard.writeText(`"${verse.text}" - ${verse.reference}`)
+        alert('Verse copied to clipboard!')
+      }
+    } catch (error) {
+      console.error('Error sharing verse:', error)
+    } finally {
+      setIsSharing(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen w-full bg-gradient-to-b from-black to-[#1A0A1F] text-white p-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-6">
+          <Button
+            variant="ghost"
+            className="text-white"
+            onClick={onContinue || (() => router.push('/journal'))}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            {onContinue ? 'Back' : 'Back to Journal'}
+          </Button>
+        </div>
+
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-white">Your Bible Verse</h1>
+          <p className="text-gray-400">Based on your journal entry</p>
+        </div>
+
+        <Card className="bg-[#1A1A1A] border-none shadow-md mb-6">
+          <CardContent className="p-6">
+            <div className="flex justify-center mb-4">
+              <BookOpen className="h-10 w-10 text-[#6C63FF]" />
+            </div>
+            <p className="text-xl text-center italic mb-4 text-white">"{verse.text}"</p>
+            <p className="text-center font-medium text-gray-400">
+              {verse.reference}
+            </p>
+          </CardContent>
+          <CardFooter className="flex justify-center gap-4 p-4 border-t border-gray-800">
+            <Button
+              variant="outline"
+              className={`border-gray-700 ${
+                isFavorited ? 'bg-pink-900/30 text-pink-300' : 'hover:bg-[#3A3A3A]'
+              }`}
+              onClick={handleSaveFavorite}
+              disabled={isFavorited || isSaving}
+            >
+              <Heart className={`mr-2 h-4 w-4 ${isFavorited ? 'fill-pink-300' : ''}`} />
+              {isFavorited ? 'Saved' : isSaving ? 'Saving...' : 'Save as Favorite'}
+            </Button>
+            <Button
+              variant="outline"
+              className="border-gray-700 hover:bg-[#3A3A3A]"
+              onClick={handleShare}
+              disabled={isSharing}
+            >
+              <Share2 className="mr-2 h-4 w-4" />
+              {isSharing ? 'Sharing...' : 'Share'}
+            </Button>
+            {onContinue && (
+              <Button
+                variant="default"
+                className="bg-[#6C63FF] hover:bg-[#5A52D5]"
+                onClick={onContinue}
+              >
+                Continue
+              </Button>
+            )}
+          </CardFooter>
+        </Card>
+
+        {verse.explanation && (
+          <Card className="bg-[#1A1A1A] border-none shadow-md">
+            <CardContent className="p-6">
+              <h2 className="text-lg font-semibold mb-2 text-white">Why this verse?</h2>
+              <p className="text-white">{verse.explanation}</p>
+              {verse.isFromAI && (
+                <p className="text-xs text-gray-500 mt-4">
+                  This explanation was generated by AI and is meant to provide context.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
+  )
+}
