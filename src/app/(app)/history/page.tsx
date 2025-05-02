@@ -84,7 +84,7 @@ export default function HistoryPage() {
             id,
             verse_id,
             created_at,
-            verse:verse_id(id, reference, text)
+            verse:bible_verses!verse_id(id, reference, text)
           `)
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
@@ -92,15 +92,16 @@ export default function HistoryPage() {
         if (versesError) throw versesError
 
         if (versesData) {
+          console.log('Verses data:', versesData);
           // Transform the data to match the FavoriteVerse interface
           const formattedVerses = versesData.map(item => ({
             id: item.id,
             verse_id: item.verse_id,
             created_at: item.created_at,
             verse: {
-              id: item.verse[0]?.id || '',
-              reference: item.verse[0]?.reference || '',
-              text: item.verse[0]?.text || ''
+              id: item.verse.id,
+              reference: item.verse.reference,
+              text: item.verse.text
             }
           }))
           setFavoriteVerses(formattedVerses)

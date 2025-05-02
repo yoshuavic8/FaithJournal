@@ -54,7 +54,7 @@ export default function VerseDetailPage() {
           .from('favorite_verses')
           .select(`
             *,
-            verse:verse_id (
+            verse:bible_verses!verse_id (
               id,
               reference,
               text,
@@ -157,8 +157,8 @@ export default function VerseDetailPage() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
           </Button>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
             onClick={() => setDeleteDialogOpen(true)}
           >
@@ -181,7 +181,7 @@ export default function VerseDetailPage() {
           <CardContent className="p-6">
             <p className="text-white italic text-xl mb-4">"{favoriteVerse.verse.text}"</p>
             <p className="text-gray-300 text-right font-medium">— {favoriteVerse.verse.reference}</p>
-            
+
             {favoriteVerse.verse.emotion_category && (
               <div className="mt-4 pt-4 border-t border-gray-800">
                 <p className="text-gray-400">
@@ -193,8 +193,8 @@ export default function VerseDetailPage() {
         </Card>
 
         <div className="flex justify-center">
-          <Button 
-            onClick={handleShare} 
+          <Button
+            onClick={handleShare}
             disabled={isSharing}
             className="bg-[#6C63FF] hover:bg-[#5A52D5] text-white"
           >
